@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Isomap</title>
+    <link rel="stylesheet" href="static/css/styles.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+    <script src="static/js/index.js"></script>
+  </head>
+  <body>
+    <div>
+      <form class="inputs">
+        <label for="dataset">Dataset: </label
+        ><select class="inputs" name="input" id="dataset">
+          <option value="swiss_roll">swiss_roll</option>
+          <option value="s_curve">s_curve</option>
+          <option value="digits">digits</option>
+        </select>
+        <br />
+        <label for="mode">Neighborhood graph mode: </label
+        ><select name="input" id="mode">
+          <option value="k-nearest-neighbor">k-nearest-neighbor</option>
+          <option value="r-ball">r-ball</option>
+        </select>
+        <br />
+        <label id="label-for-param" for="param">K</label>
+        <input id="param" type="range" min="3" max="50" step="1" name="range" />
+        <br />
+      </form>
+      <button id="submit">Submit</button>
+    </div>
+    <svg id="main" width="500" height="500"></svg>
+  </body>
+  <script>
+    function update_ui(value = undefined) {
+      let mode = d3.select("#mode").node().value;
+      if (mode === "k-nearest-neighbor") {
+        d3.select("#param")
+          .attr("min", 3)
+          .attr("max", 50)
+          .attr("value", value || 15)
+          .attr("step", 1);
+        d3.select("#label-for-param").text(
+          `K: ${d3.select("#param").attr("value")}`,
+        );
+      } else {
+        d3.select("#param")
+          .attr("min", 0.5)
+          .attr("max", 10)
+          .attr("value", value || 0.5)
+          .attr("step", 0.001);
+        d3.select("#label-for-param").text(
+          `R: ${d3.select("#param").attr("value")}`,
+        );
+      }
+    }
+
+    update_ui();
+    d3.select("#mode").on("change", (event) => update_ui());
+    d3.select("#param").on("input", () => {
+      update_ui(d3.select("#param").node().value);
+    });
+
+    d3.select("#submit").on("click", () => {
+      //TODO
+    });
+  </script>
+</html>
