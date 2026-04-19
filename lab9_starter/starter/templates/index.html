@@ -54,14 +54,83 @@
       }
     }
 
+    async function post(url, data) {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        });
+
+        return await response.json();
+    }       
+
     update_ui();
     d3.select("#mode").on("change", (event) => update_ui());
     d3.select("#param").on("input", () => {
       update_ui(d3.select("#param").node().value);
     });
 
-    d3.select("#submit").on("click", () => {
-      //TODO
+    d3.select("#submit").on("click", async () => {
+        const vars = {
+            data: d3.select("#dataset").node().value,
+            mode: d3.select("#mode").node().value,
+            param: d3.select("#param").node().value,
+        };
+
+        const result = await post("/isomap", vars);
+        const isomap = result.data;
+        const labels = result.labels;
+
+        console.log(labels)
+
+        if (vars.data != "digits"){
+            color = d3.scaleSequential(d3.interpolateViridis)
+                .domain(d3.extent(labels))
+        }
+
+        else {
+            color = d3.scaleOrdinal(d3.schemeCategory10)
+        }
+
+
+        const svg = d3.select("#main")
+
+        svg.selectAll("circle.data").remove();
+        svg.selectAll(".axis").remove();
+
+        const x = d3.extent(isomap, d => d[0]);
+        const y = d3.extent(isomap, d => d[1]);
+
+        const xScale = d3.scaleLinear()
+            .domain([x[0] - 10, x[1] + 10])
+            .range([50, 450]);
+
+        const yScale = d3.scaleLinear()
+            .domain([y[0] - 10, y[1] + 10])
+            .range([450, 50]);
+
+        const xAxis = d3.axisBottom(xScale);
+        const yAxis = d3.axisLeft(yScale);
+
+        svg.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0, 450)")
+            .call(xAxis);
+
+        svg.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(50, 0)")
+            .call(yAxis);
+
+        svg.selectAll("circle")
+            .data(isomap)
+            .join("circle")
+            .attr("cx", d => xScale(d[0]))
+            .attr("cy", d => yScale(d[1]))
+            .attr("r", 2)
+            .attr("fill", (d, i) => color(labels[i]));
     });
   </script>
 </html>
